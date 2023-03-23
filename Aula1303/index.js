@@ -73,6 +73,7 @@ function buildAccount(){
                 chalk.bgWhite.red('Conta Já Exite.')
             )
             buildAccount() // chama a função novamente se o nome da conta já existir
+            return
         }
         // cria um novo arquivo JSON para a nova conta, com um saldo inicial de zero
         fs.writeFileSync(
@@ -86,5 +87,42 @@ function buildAccount(){
         console.info(chalk.bgWhite.green('Parabéns, Conta Criada!'))
         operation() // volta para o menu principal do programa
     })
+}
+//#endregion
+
+//#region Deposito na conta
+function deposit(){
+    inquirer.prompt([
+        {
+            name:'accountNamer',
+            message:'Qual Conta Deseja Depositar: '
+        }
+    ]).then((answer) =>{
+        const accountName = answer['accountName']
+
+        if(!checkAccount(accountName)){
+            return deposit()
+        }
+
+        inquirer.prompt([
+            {
+                name:'amount',
+                message:'Quanto Deseja Depositar? '
+            }
+        ]).then((answer) => {
+            const amount = answer['amount']
+
+            addAmount(accountName, amount)
+            setTimeout(() =>{
+                operation()
+            }, 1000);
+        })
+    })
+}
+function checkAccount(accoountName){
+    if(!fs.existsSync(`accounts/${accountName}.json`)){
+        return false
+    }
+    return true
 }
 //#endregion
