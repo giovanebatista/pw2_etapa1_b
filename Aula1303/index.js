@@ -91,38 +91,87 @@ function buildAccount(){
 //#endregion
 
 //#region Deposito na conta
-function deposit(){
+// Função para depositar um valor em uma conta
+function deposit() {
+    // Utiliza a biblioteca "inquirer" para solicitar ao usuário o nome da conta
     inquirer.prompt([
         {
             name:'accountNamer',
             message:'Qual Conta Deseja Depositar: '
         }
-    ]).then((answer) =>{
+    ]).then((answer) => {
+        // Atribui o valor digitado na variável "accountName"
         const accountName = answer['accountName']
-
-        if(!checkAccount(accountName)){
+        
+        // Verifica se a conta existe. Se não existir, chama a função "deposit()" novamente
+        if (!checkAccount(accountName)) {
             return deposit()
         }
-
+        
+        // Utiliza a biblioteca "inquirer" para solicitar ao usuário o valor a ser depositado
         inquirer.prompt([
             {
                 name:'amount',
                 message:'Quanto Deseja Depositar? '
             }
         ]).then((answer) => {
+            // Atribui o valor digitado na variável "amount"
             const amount = answer['amount']
-
+            
+            // Adiciona o valor à conta
             addAmount(accountName, amount)
-            setTimeout(() =>{
+            
+            // Imprime mensagem de sucesso e chama a função "operation()" depois de 1 segundo
+            console.log(chalck.bgYellow.red('Sucesso! montante depositado.'))
+            setTimeout(() => {
                 operation()
             }, 1000);
         })
     })
 }
-function checkAccount(accoountName){
-    if(!fs.existsSync(`accounts/${accountName}.json`)){
+
+// Função que verifica se uma conta existe
+function checkAccount(accountName) {
+    // Verifica se o arquivo correspondente à conta existe
+    if (!fs.existsSync(`accounts/${accountName}.json`)) {
         return false
     }
+    
     return true
 }
+
+// Função que retorna os dados de uma conta
+function getAccount(accountName) {
+    // Lê o arquivo correspondente à conta e retorna os dados em formato JSON
+    const accountJSON = fs.readFileSync(`accounts/${accountName}.json`, {
+        encoding: 'utf8',
+        flag: 'r'
+    })
+    
+    return JSON.parse(accountJSON)
+}
+
+// Função que adiciona um valor à conta
+function addAmount(accountName, amount) {
+    // Obtém os dados da conta
+    const accountData = getAccount(accountName)
+    
+    // Verifica se o valor do depósito é válido. Se não for, chama a função "deposit()" novamente
+    if (!amount) {
+        console.log(chalck.bgWhite.red('Erro de montante!'))
+        return deposit()
+    }
+    
+    // Adiciona o valor à conta
+    accountData.balance = parseFloat(amount) + parseFloat(accountData.balance)
+
+    // Escreve os dados atualizados da conta no arquivo correspondente
+    fs.writeFileSync(`accounts?${accountName}.json`, JSON.stringify(accountData), function (err) {
+        console.log(err)
+    })
+    
+    // Imprime mensagem de sucesso
+    console.log(chalck.green('Seu valor foi depositado!'))
+}
+
 //#endregion
